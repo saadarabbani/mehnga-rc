@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mehnga ARC&amp;C — Advanced Robotic Command &amp; Control</title>
+  <meta name="description" content="Professional robotic command and control dashboard for Mehnga ARC&C autonomous robots.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ===== SPLASH PAGE ===== -->
+<div id="page-splash" class="page active">
+  <div class="splash-grid"></div>
+  <div class="splash-content">
+    <div class="splash-logo-ring">
+      <div class="splash-icon">🤖</div>
+    </div>
+    <div class="splash-title">MEHNGA <span>ARC&amp;C</span></div>
+    <div class="splash-sub">Advanced Robotic Command &amp; Control</div>
+    <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+    <div class="splash-status" id="splashStatus">INITIALIZING SYSTEMS...</div>
+  </div>
+</div>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="page-login" class="page">
+  <canvas class="login-particles" id="loginCanvas"></canvas>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🤖</div>
+      <div class="login-logo-text">
+        <h2>Mehnga ARC&amp;C</h2>
+        <p>Robotic Command System</p>
+      </div>
+    </div>
+    <div class="login-h">Welcome Back</div>
+    <div class="login-sub">Sign in to access your robot dashboard</div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" type="email" placeholder="admin@mehnga.io" id="loginEmail">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" placeholder="••••••••" id="loginPass">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="login-divider"><span>or</span></div>
+    <button class="btn-demo" onclick="doDemo()">🎮 Continue as Demo User</button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP SHELL ===== -->
+<div id="page-app" class="page">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-logo">🤖</div>
+      <div>
+        <div class="header-title">Mehnga ARC&amp;C</div>
+        <div class="header-sub">UNIT-01 · ONLINE</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <div class="status-text">CONNECTED</div>
+      </div>
+      <div class="header-btn notif-badge" onclick="showTab('notif')" title="Notifications">🔔</div>
+      <div class="header-btn" onclick="showTab('profile')" title="Profile">👤</div>
+    </div>
+  </div>
+
+  <!-- GIANT LAUNCH BUTTON -->
+  <div style="padding: 16px; background: rgba(0, 150, 255, 0.1); border-bottom: 1px solid rgba(0, 150, 255, 0.3); text-align: center;">
+    <button onclick="openSuperCockpit()" style="background: linear-gradient(135deg, #00E5C8, #0096FF); color: #000; border: none; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 229, 200, 0.4); text-transform: uppercase; letter-spacing: 1px; width: 100%;">
+      🚀 Launch Super Cockpit
+    </button>
+  </div>
+
+  <!-- TAB: COCKPIT -->
+  <div class="tab-content active" id="tab-cockpit">
+    <div class="cockpit-scroll page-scroll">
+      <!-- Live Camera -->
+      <div class="camera-card">
+        <canvas id="cameraCanvas" height="190"></canvas>
+        <div class="camera-top">
+          <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+          <div class="camera-time" id="cameraTime">10:24:37</div>
+        </div>
+        <div class="camera-bottom">
+          <div class="cam-controls">
+            <button class="cam-btn" id="nvBtn" onclick="toggleNightVision()">NV</button>
+            <button class="cam-btn">HD</button>
+            <button class="cam-btn">🔊</button>
+            <button class="cam-btn">🎤</button>
+          </div>
+          <button class="fullscreen-btn" onclick="openSuperCockpit()">⛶</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Battery</div>
+          <div class="stat-value" style="color:#00E87A">82<span class="stat-unit" style="font-size:13px">%</span></div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:82%;background:#00E87A"></div></div>
+          <div class="stat-sub">42 min remaining</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Speed</div>
+          <div class="stat-value" style="color:#00E5C8">0.52<span class="stat-unit" style="font-size:11px">m/s</span></div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:52%;background:#00E5C8"></div></div>
+          <div class="stat-sub">Standard mode</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Temp</div>
+          <div class="stat-value" style="color:#FFD166">42<span class="stat-unit" style="font-size:11px">°C</span></div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:65%;background:#FFD166"></div></div>
+          <div class="stat-sub">Normal range</div>
+        </div>
+      </div>
+
+      <!-- Cleaning Controls -->
+      <div class="schedule-card" style="padding:12px; display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="card-title" style="border:none; padding:0;">⚙️ Cleaning Controls</div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+          <button class="cam-btn" style="padding:8px; border-color:var(--teal); color:var(--teal); background:var(--teal-dim)">Standard</button>
+          <button class="cam-btn" style="padding:8px;">Eco</button>
+          <button class="cam-btn" style="padding:8px;">Max</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:10px; color:var(--text3); font-weight:600;">SUCTION</span>
+          <input type="range" class="js-slider" style="flex:1" value="60" oninput="showToast('Suction power set to ' + this.value + '%')">
+        </div>
+      </div>
+
+      <!-- Navigation Map -->
+      <div class="map-card">
+        <div class="card-header">
+          <div class="card-title">🗺 Navigation Map</div>
+          <div class="card-link" onclick="showTab('map')">View Full Map →</div>
+        </div>
+        <canvas id="navMapCanvas" height="160"></canvas>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="schedule-card" style="overflow:hidden">
+        <div class="card-header">
+          <div class="card-title">⚡ Quick Actions</div>
+          <div class="card-link">All Commands →</div>
+        </div>
+        <div class="quick-actions">
+          <div class="qa-row">
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(0,232,122,0.15),rgba(0,229,200,0.15));border-color:rgba(0,232,122,0.4)" onclick="sendCmd('Start Cleaning')">
+              <div class="qa-icon">▶️</div><div class="qa-label" style="color:#00E87A">Start<br>Clean</div>
+            </button>
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(255,209,102,0.15),rgba(255,140,0,0.15));border-color:rgba(255,209,102,0.4)" onclick="sendCmd('Pause')">
+              <div class="qa-icon">⏸️</div><div class="qa-label" style="color:#FFD166">Pause</div>
+            </button>
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(0,150,255,0.15),rgba(0,100,200,0.15));border-color:rgba(0,150,255,0.4)" onclick="sendCmd('Return to Dock')">
+              <div class="qa-icon">🏠</div><div class="qa-label" style="color:#0096FF">Return<br>Dock</div>
+            </button>
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(123,47,255,0.15),rgba(80,0,200,0.15));border-color:rgba(123,47,255,0.4)" onclick="openSuperCockpit()">
+              <div class="qa-icon">🕹️</div><div class="qa-label" style="color:#7B2FFF">Manual<br>Control</div>
+            </button>
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(0,180,216,0.15),rgba(0,120,160,0.15));border-color:rgba(0,180,216,0.4)" onclick="sendCmd('Surveillance Mode')">
+              <div class="qa-icon">🛡️</div><div class="qa-label" style="color:#00B4D8">Surveil<br>lance</div>
+            </button>
+            <button class="qa-btn" style="background:linear-gradient(135deg,rgba(255,74,107,0.15),rgba(200,0,80,0.15));border-color:rgba(255,74,107,0.4)" onclick="sendCmd('Companion Mode')">
+              <div class="qa-icon">❤️</div><div class="qa-label" style="color:#FF4A6B">Compan<br>ion</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule + Alerts Row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <!-- Schedule -->
+        <div class="schedule-card">
+          <div class="card-header">
+            <div class="card-title">📅 Schedule</div>
+            <div class="card-link">All →</div>
+          </div>
+          <div class="sched-item">
+            <div class="sched-icon" style="background:rgba(0,232,122,0.15)">🛋️</div>
+            <div class="sched-info">
+              <div class="sched-name">Living Room</div>
+              <div class="sched-time">10:00 AM Daily</div>
+            </div>
+            <div class="badge badge-green">Active</div>
+          </div>
+          <div class="sched-item">
+            <div class="sched-icon" style="background:rgba(0,150,255,0.15)">🍳</div>
+            <div class="sched-info">
+              <div class="sched-name">Kitchen</div>
+              <div class="sched-time">11:00 AM Daily</div>
+            </div>
+            <div class="badge badge-blue">Soon</div>
+          </div>
+          <div class="sched-item">
+            <div class="sched-icon" style="background:rgba(123,47,255,0.15)">🛏️</div>
+            <div class="sched-info">
+              <div class="sched-name">Bedroom</div>
+              <div class="sched-time">01:00 PM Daily</div>
+            </div>
+            <div class="badge badge-blue">Soon</div>
+          </div>
+          <div class="sched-item">
+            <div class="sched-icon" style="background:rgba(80,128,160,0.15)">📚</div>
+            <div class="sched-info">
+              <div class="sched-name">Study Room</div>
+              <div class="sched-time">03:00 PM Daily</div>
+            </div>
+            <div class="badge badge-grey">Done</div>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="alerts-card">
+          <div class="card-header">
+            <div class="card-title">🔔 Alerts</div>
+            <div class="card-link">All →</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:rgba(255,209,102,0.15)">⚠️</div>
+            <div class="alert-info">
+              <div class="alert-title">Obstacle Detected</div>
+              <div class="alert-desc">Sofa leg · Living Room</div>
+            </div>
+            <div class="alert-time-text">10:24</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:rgba(0,150,255,0.15)">ℹ️</div>
+            <div class="alert-info">
+              <div class="alert-title">Docked Successfully</div>
+              <div class="alert-desc">Robot returned</div>
+            </div>
+            <div class="alert-time-text">10:15</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:rgba(255,74,107,0.15)">💧</div>
+            <div class="alert-info">
+              <div class="alert-title">Low Water Tank</div>
+              <div class="alert-desc">Please refill</div>
+            </div>
+            <div class="alert-time-text">09:58</div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon" style="background:rgba(0,232,122,0.15)">✅</div>
+            <div class="alert-info">
+              <div class="alert-title">Face Recognized</div>
+              <div class="alert-desc">Access granted</div>
+            </div>
+            <div class="alert-time-text">09:41</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+    </div>
+  </div>
+
+  <!-- TAB: MAP -->
+  <div class="tab-content" id="tab-map">
+    <div class="map-full">
+      <canvas id="mapFullCanvas"></canvas>
+      <div class="map-zoom">
+        <div class="zoom-btn" onclick="mapZoom(1)">+</div>
+        <div class="zoom-btn" onclick="mapZoom(-1)">−</div>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#0096FF"></div>Robot Position</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FF4A6B"></div>Obstacles</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00E5C8"></div>Cleaned Area</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7B2FFF"></div>Dock Station</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: TASKS -->
+  <div class="tab-content" id="tab-tasks" style="position:relative">
+    <div class="tasks-scroll page-scroll">
+      <div class="tasks-date">Today — Monday, June 10</div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(0,232,122,0.15)">🛋️</div>
+        <div class="task-info">
+          <div class="task-name">Living Room Clean</div>
+          <div class="task-time">10:00 AM · 25 min · Daily</div>
+        </div>
+        <div class="badge badge-green">Active</div>
+      </div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(0,150,255,0.15)">🍳</div>
+        <div class="task-info">
+          <div class="task-name">Kitchen Sweep</div>
+          <div class="task-time">11:00 AM · 20 min · Daily</div>
+        </div>
+        <div class="badge badge-blue">Upcoming</div>
+      </div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(123,47,255,0.15)">🛏️</div>
+        <div class="task-info">
+          <div class="task-name">Bedroom Mop</div>
+          <div class="task-time">01:00 PM · 30 min · Daily</div>
+        </div>
+        <div class="badge badge-blue">Upcoming</div>
+      </div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(0,180,216,0.15)">🚿</div>
+        <div class="task-info">
+          <div class="task-name">Bathroom Disinfect</div>
+          <div class="task-time">02:00 PM · 15 min · Weekly</div>
+        </div>
+        <div class="badge badge-blue">Upcoming</div>
+      </div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(80,128,160,0.15)">📚</div>
+        <div class="task-info">
+          <div class="task-name">Study Room Clean</div>
+          <div class="task-time">03:00 PM · 20 min · Daily</div>
+        </div>
+        <div class="badge badge-grey">Completed</div>
+      </div>
+      <div class="tasks-date" style="margin-top:12px">Tomorrow</div>
+      <div class="task-item">
+        <div class="task-icon" style="background:rgba(255,74,107,0.15)">🏠</div>
+        <div class="task-info">
+          <div class="task-name">Full House Deep Clean</div>
+          <div class="task-time">09:00 AM · 90 min · Weekly</div>
+        </div>
+        <div class="badge badge-amber">Scheduled</div>
+      </div>
+      <div style="height:8px"></div>
+    </div>
+    <button class="task-fab" onclick="showToast('➕ Add Task — Coming Soon!')">+</button>
+  </div>
+
+  <!-- TAB: NOTIFICATIONS -->
+  <div class="tab-content" id="tab-notif">
+    <div class="notif-filters">
+      <div class="filter-chip active" onclick="filterChip(this)">All</div>
+      <div class="filter-chip" onclick="filterChip(this)">Obstacles</div>
+      <div class="filter-chip" onclick="filterChip(this)">System</div>
+      <div class="filter-chip" onclick="filterChip(this)">Security</div>
+      <div class="filter-chip" onclick="filterChip(this)">Cleaning</div>
+    </div>
+    <div class="notif-list">
+      <div class="notif-item unread">
+        <div class="notif-icon" style="background:rgba(255,209,102,0.15)">⚠️</div>
+        <div class="notif-text">
+          <div class="notif-title">Obstacle Detected</div>
+          <div class="notif-desc">Sofa leg detected in Living Room — robot paused and rerouting</div>
+        </div>
+        <div class="notif-time">10:24</div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-icon" style="background:rgba(0,150,255,0.15)">ℹ️</div>
+        <div class="notif-text">
+          <div class="notif-title">Docked Successfully</div>
+          <div class="notif-desc">Robot returned to dock and is charging</div>
+        </div>
+        <div class="notif-time">10:15</div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-icon" style="background:rgba(255,74,107,0.15)">💧</div>
+        <div class="notif-text">
+          <div class="notif-title">Low Water Tank</div>
+          <div class="notif-desc">Water tank is at 20% — please refill before next cleaning</div>
+        </div>
+        <div class="notif-time">09:58</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(0,232,122,0.15)">✅</div>
+        <div class="notif-text">
+          <div class="notif-title">Face Recognized</div>
+          <div class="notif-desc">Owner face recognized — access granted to restricted area</div>
+        </div>
+        <div class="notif-time">09:41</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(0,232,122,0.15)">🧹</div>
+        <div class="notif-text">
+          <div class="notif-title">Living Room Cleaning Complete</div>
+          <div class="notif-desc">Cleaned 28 m² · 97% coverage achieved</div>
+        </div>
+        <div class="notif-time">09:30</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-icon" style="background:rgba(123,47,255,0.15)">⚡</div>
+        <div class="notif-text">
+          <div class="notif-title">Charging Complete</div>
+          <div class="notif-desc">Battery charged to 100% — ready for next task</div>
+        </div>
+        <div class="notif-time">08:15</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PROFILE -->
+  <div class="tab-content" id="tab-profile">
+    <div class="profile-scroll page-scroll">
+      <div class="profile-hero">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-name">Demo User</div>
+        <div class="profile-email">admin@mehnga.io</div>
+        <div class="profile-role"><div class="badge badge-teal">Admin</div></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">Robot Settings</div>
+        <div class="setting-item" onclick="showRobotSettings()">
+          <div class="setting-icon">🤖</div><div class="setting-label">Robot Configuration</div><div class="setting-arrow">›</div>
+        </div>
+        <div class="setting-item" onclick="showToast('📶 Wi-Fi — Coming Soon!')">
+          <div class="setting-icon">📶</div><div class="setting-label">Wi-Fi Settings</div><div class="setting-arrow">›</div>
+        </div>
+        <div class="setting-item" onclick="showToast('🗺 Map Editor — Coming Soon!')">
+          <div class="setting-icon">🗺</div><div class="setting-label">Map Editor</div><div class="setting-arrow">›</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">App Settings</div>
+        <div class="setting-item" onclick="showToast('🔔 Notifications — Coming Soon!')">
+          <div class="setting-icon">🔔</div><div class="setting-label">Notifications</div><div class="setting-arrow">›</div>
+        </div>
+        <div class="setting-item" onclick="showToast('🎨 Theme — Coming Soon!')">
+          <div class="setting-icon">🎨</div><div class="setting-label">Appearance</div><div class="setting-arrow">›</div>
+        </div>
+        <div class="setting-item" onclick="showConnectionInfo()">
+          <div class="setting-icon">ℹ️</div><div class="setting-label">About</div><div class="setting-arrow">›</div>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="setting-item danger" onclick="doLogout()">
+          <div class="setting-icon">🚪</div><div class="setting-label">Logout</div><div class="setting-arrow">›</div>
+        </div>
+      </div>
+      <div style="height:8px"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-cockpit" onclick="showTab('cockpit')">
+      <div class="nav-icon">🏠</div><span>Cockpit</span>
+    </button>
+    <button class="nav-item" id="nav-map" onclick="showTab('map')">
+      <div class="nav-icon">🗺</div><span>Map</span>
+    </button>
+    <button class="nav-item" id="nav-tasks" onclick="showTab('tasks')">
+      <div class="nav-icon">📋</div><span>Tasks</span>
+    </button>
+    <button class="nav-item" id="nav-notif" onclick="showTab('notif')">
+      <div class="nav-icon">🔔</div><span>Alerts</span>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="showTab('profile')">
+      <div class="nav-icon">👤</div><span>Profile</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== SUPER COCKPIT PAGE ===== -->
+<div id="page-super" class="page">
+  <!-- Immersive Background & Canvas -->
+  <div class="sc-bg-layer" style="background: radial-gradient(circle at 50% 40%, #1e3a5f 0%, #050d1a 60%, #000000 100%);"></div>
+  <canvas id="scCameraCanvas" class="sc-overlay-canvas"></canvas>
+
+  <!-- HUD Container (Pointer-events: none) -->
+  <div class="sc-hud-container">
+    <!-- Top Bar -->
+    <div class="sc-topbar pe-auto">
+      <div class="sc-brand">
+        <div class="sc-brand-icon">🤖</div>
+        <div>
+          <div class="sc-brand-name">Mehnga ARC&amp;C</div>
+          <div class="sc-mode">SUPER COCKPIT · MANUAL CONTROL</div>
+        </div>
+      </div>
+      <div class="sc-stats">
+        <div class="sc-battery">
+          <div class="sc-batt-bar"><div class="sc-batt-fill"></div></div>
+          <div class="sc-stat-val mono" style="color:#00E87A;font-size:12px">82%</div>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-safety">
+          <span>🛡</span><span>SAFETY: CLEAR</span>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-stat"><div class="sc-stat-val mono" style="color:#00E5C8">36ms</div><div class="sc-stat-lbl">LATENCY</div></div>
+        <div class="sc-stat"><div class="sc-stat-val mono">30/60</div><div class="sc-stat-lbl">TX/APP FPS</div></div>
+        <div class="sc-stat"><div class="sc-stat-val mono" style="color:#00E5C8" id="sc-uptime">00:00:00</div><div class="sc-stat-lbl">UPTIME</div></div>
+      </div>
+      <div class="sc-emergency" onclick="showToast('🛑 EMERGENCY STOP Activated!')">
+        <span>🛑</span><span>EMERGENCY STOP</span>
+      </div>
+    </div>
+
+    <!-- Compass -->
+    <div class="sc-compass-overlay pe-auto">
+      <span>30</span><span>NE</span><span>60</span><span>75</span>
+      <span class="curr">105°</span>
+      <span>120</span><span>SE</span><span>150</span><span>165</span>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sc-sidebar-overlay pe-auto">
+      <div class="sc-side-btn active-btn">
+        <div class="sb-icon">🛡</div><div class="sb-label">Safety</div>
+      </div>
+      <div class="sc-side-btn" onclick="showToast('📷 Camera panel')">
+        <div class="sb-icon">📷</div><div class="sb-label">Camera</div>
+      </div>
+      <div class="sc-side-btn" onclick="sendCmd('Return to Dock')">
+        <div class="sb-icon">🏠</div><div class="sb-label">Dock</div>
+      </div>
+      <div class="sc-side-btn" onclick="sendCmd('Start Cleaning')">
+        <div class="sb-icon">🧹</div><div class="sb-label">Clean</div>
+      </div>
+      <div class="sc-side-btn" onclick="closeSuperCockpit();showTab('map')">
+        <div class="sb-icon">🗺</div><div class="sb-label">Map</div>
+      </div>
+      <div class="sc-side-btn" onclick="showToast('📡 Scanning area...')">
+        <div class="sb-icon">📡</div><div class="sb-label">Scan</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="sc-right-overlay pe-auto">
+      <!-- Mini Map -->
+      <div class="sc-minimap">
+        <canvas id="scMinimapCanvas"></canvas>
+        <div class="minimap-controls">
+          <div class="mm-btn" onclick="showToast('🔍 Zoom in')">+</div>
+          <div class="mm-btn" onclick="showToast('🔍 Zoom out')">−</div>
+        </div>
+      </div>
+      <!-- Status Tiles -->
+      <div class="sc-tiles">
+        <div class="sc-tile t-orange">
+          <div class="sc-tile-lbl">Obstacle</div>
+          <div class="sc-tile-val" style="color:#FFD166">1.2m</div>
+        </div>
+        <div class="sc-tile t-green">
+          <div class="sc-tile-lbl">Arm</div>
+          <div class="sc-tile-val" style="color:#00E87A">Ready</div>
+        </div>
+        <div class="sc-tile t-blue">
+          <div class="sc-tile-lbl">Mode</div>
+          <div class="sc-tile-val" style="color:#0096FF">Std</div>
+        </div>
+        <div class="sc-tile t-teal">
+          <div class="sc-tile-lbl">Water</div>
+          <div class="sc-tile-val" style="color:#00E5C8">65%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Overlay -->
+    <div class="sc-bottom-overlay pe-auto">
+      <!-- Joysticks -->
+      <div class="sc-joystick-row">
+        <!-- Left Joystick (Movement) -->
+        <div class="sc-joystick-area">
+          <div class="joystick-wrap">
+            <div class="joystick-outer" id="jsLeft" onmousedown="startJoystick(event,'left')" ontouchstart="startJoystickTouch(event,'left')">
+              <span class="js-dir js-up">▲</span>
+              <span class="js-dir js-dn">▼</span>
+              <span class="js-dir js-lt">◄</span>
+              <span class="js-dir js-rt">►</span>
+              <div class="joystick-knob" id="knobLeft"></div>
+            </div>
+          </div>
+          <div class="js-speed-panel">
+            <div class="js-label">MOVE SPEED</div>
+            <div class="js-speed-val" id="moveSpeedVal">65%</div>
+            <div class="js-speed-ctrl">
+              <div class="speed-btn" onclick="stepSlider('mSpeed', -1)">−</div>
+              <input type="range" class="js-slider" id="mSpeed" min="0" max="100" value="65" oninput="document.getElementById('moveSpeedVal').textContent=this.value+'%'">
+              <div class="speed-btn" onclick="stepSlider('mSpeed', 1)">+</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Info -->
+        <div class="sc-info-panel-float">
+          <div class="sc-info-item">
+            <div class="sc-info-icon">🏃</div>
+            <div><div class="sc-info-val" style="color:#00E5C8">0.52<span style="font-size:9px;color:#5080A0"> m/s</span></div><div class="sc-info-lbl">Speed</div></div>
+          </div>
+          <div class="sc-info-item">
+            <div class="sc-info-icon">🔋</div>
+            <div><div class="sc-info-val" style="color:#00E87A">82<span style="font-size:9px;color:#5080A0">%</span></div><div class="sc-info-lbl">Battery</div></div>
+          </div>
+          <div class="sc-info-item">
+            <div class="sc-info-icon">🌡️</div>
+            <div><div class="sc-info-val" style="color:#FFD166">42<span style="font-size:9px;color:#5080A0">°C</span></div><div class="sc-info-lbl">Temp</div></div>
+          </div>
+          <div class="sc-info-item">
+            <div class="sc-info-icon">⏱️</div>
+            <div><div class="sc-info-val" id="sc-uptime2">01:24:37</div><div class="sc-info-lbl">Uptime</div></div>
+          </div>
+        </div>
+
+        <!-- Right Joystick (Arm) -->
+        <div class="sc-joystick-area">
+          <div class="js-speed-panel">
+            <div class="js-label">ARM SPEED</div>
+            <div class="js-speed-val" id="armSpeedVal">55%</div>
+            <div class="js-speed-ctrl">
+              <div class="speed-btn" onclick="stepSlider('aSpeed', -1)">−</div>
+              <input type="range" class="js-slider" id="aSpeed" min="0" max="100" value="55" oninput="document.getElementById('armSpeedVal').textContent=this.value+'%'">
+              <div class="speed-btn" onclick="stepSlider('aSpeed', 1)">+</div>
+            </div>
+          </div>
+          <div class="joystick-wrap">
+            <div class="joystick-outer" id="jsRight" onmousedown="startJoystick(event,'right')" ontouchstart="startJoystickTouch(event,'right')">
+              <span class="js-dir js-up">↺</span>
+              <span class="js-dir js-dn">↻</span>
+              <span class="js-dir js-lt">◄</span>
+              <span class="js-dir js-rt">►</span>
+              <div class="joystick-knob" id="knobRight"></div>
+            </div>
+          </div>
+
+          <!-- D-Pad -->
+          <div class="dpad-wrap">
+            <div class="dpad-btn up">▲</div>
+            <div class="dpad-btn down">▼</div>
+            <div class="dpad-btn left">◄</div>
+            <div class="dpad-btn right">►</div>
+            <div class="dpad-center">◎</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="sc-toolbar-float">
+        <button class="tb-btn" onclick="showToast('📣 HONK!')">
+          <span class="tb-icon">📣</span>HORN
+        </button>
+        <button class="tb-btn tb-active" id="micBtn" onclick="toggleMic()">
+          <div class="tb-led" id="micLed"></div>MIC <span id="micStat">ON</span>
+          <input type="range" class="grip-slider" value="70" style="width:40px" onclick="event.stopPropagation()" oninput="showToast('🎤 Mic: '+this.value+'%'); event.stopPropagation();">
+        </button>
+        <button class="tb-btn tb-active" id="spkBtn" onclick="toggleSpk()">
+          <div class="tb-led" id="spkLed"></div>SPK <span id="spkStat">ON</span>
+          <input type="range" class="grip-slider" value="70" style="width:40px" onclick="event.stopPropagation()" oninput="showToast('🔊 Speaker: '+this.value+'%'); event.stopPropagation();">
+        </button>
+        <div class="tb-btn" style="flex:1; justify-content:center;">
+          <div class="gripper-row">
+            <div class="gripper-label">OPEN</div>
+            <input type="range" class="grip-slider" id="gripSlider" min="0" max="100" value="30" oninput="updateGrip(this.value)">
+            <div class="gripper-label">CLOSE</div>
+          </div>
+        </div>
+        <button class="tb-btn" id="recBtn" onclick="toggleRec()">
+          <span class="tb-icon" id="recIcon">🔴</span><span id="recLabel">REC</span>
+        </button>
+        <button class="tb-btn" onclick="showToast('📸 Screenshot saved!')">
+          <span class="tb-icon">📸</span>SCREENSHOT
+        </button>
+        <button class="tb-btn" onclick="showToast('⚙️ Settings — Coming Soon!')">
+          <span class="tb-icon">⚙️</span>SETTINGS
+        </button>
+        <button class="tb-btn tb-red" onclick="closeSuperCockpit()">
+          <span class="tb-icon">✕</span>EXIT
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
